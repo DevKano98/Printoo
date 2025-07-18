@@ -1,0 +1,1214 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Printoo</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+        /* Add your CSS here */
+         * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+
+        /* Header */
+        .header {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            box-shadow: 0 2px 20px rgba(0, 0, 0, 0.1);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .header .container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem 20px;
+            position: relative;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #667eea;
+        }
+
+        .connection-status {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            padding: 0.3rem 0.6rem;
+            border-radius: 15px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 0.3rem;
+        }
+
+        .connection-connected {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .connection-error {
+            background: #f8d7da;
+            color: #721c24;
+        }
+
+        .connection-checking {
+            background: #fff3cd;
+            color: #856404;
+        }
+
+        .go-back-btn {
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            color: white;
+            border: none;
+            padding: 0.6rem 1.2rem;
+            border-radius: 25px;
+            text-decoration: none;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+        }
+
+        .go-back-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+        }
+
+        .secret-admin-btn {
+            background: #dc3545;
+            color: white;
+            border: none;
+            padding: 0.6rem 1.2rem;
+            border-radius: 25px;
+            cursor: pointer;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            position: absolute;
+            right: 20px;
+            top: 50%;
+            transform: translateY(-50%);
+            opacity: 0;
+            pointer-events: none;
+            box-shadow: 0 4px 15px rgba(220, 53, 69, 0.3);
+        }
+
+        .secret-admin-btn.visible {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .secret-admin-btn:hover {
+            background: #c82333;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(220, 53, 69, 0.4);
+        }
+
+        /* Main Content */
+        .main-content {
+            padding: 4rem 0;
+        }
+
+        .section-header {
+            text-align: center;
+            margin-bottom: 4rem;
+            color: white;
+        }
+
+        .section-header h2 {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+            text-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+        }
+
+        .section-header p {
+            font-size: 1.2rem;
+            opacity: 0.9;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .form-options {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 2rem;
+            margin-top: 2rem;
+        }
+
+        .form-option {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 2rem;
+            text-align: center;
+            transition: all 0.3s ease;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .form-option::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(45deg, #667eea, #764ba2);
+        }
+
+        .form-option:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
+        }
+
+        .form-status-indicator {
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            padding: 0.4rem 0.8rem;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 0.3rem;
+        }
+
+        .status-active-indicator {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .status-inactive-indicator {
+            background: #f8d7da;
+            color: #721c24;
+        }
+
+        .option-icon {
+            font-size: 3rem;
+            margin-bottom: 1.5rem;
+            color: #667eea;
+        }
+
+        .option-title {
+            font-size: 1.8rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+            color: #333;
+        }
+
+        .option-description {
+            color: #666;
+            margin-bottom: 1.5rem;
+            line-height: 1.6;
+        }
+
+        .option-price {
+            margin-bottom: 2rem;
+        }
+
+        .price-text {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #667eea;
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .select-btn {
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            color: white;
+            border: none;
+            padding: 1rem 2rem;
+            border-radius: 50px;
+            font-weight: 600;
+            font-size: 1.1rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            width: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+        }
+
+        .select-btn:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+        }
+
+        .select-btn:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            box-shadow: none;
+        }
+
+        /* Admin Panel */
+        .admin-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            display: none;
+            z-index: 1000;
+            backdrop-filter: blur(5px);
+        }
+
+        .admin-panel {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: white;
+            border-radius: 20px;
+            padding: 2rem;
+            width: 90%;
+            max-width: 600px;
+            max-height: 80vh;
+            overflow-y: auto;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+        }
+
+        .admin-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+            padding-bottom: 1rem;
+            border-bottom: 2px solid #f0f0f0;
+        }
+
+        .admin-header h2 {
+            color: #333;
+            font-size: 1.8rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .close-btn {
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: #999;
+            padding: 0.5rem;
+            border-radius: 50%;
+            transition: all 0.3s ease;
+        }
+
+        .close-btn:hover {
+            background: #f0f0f0;
+            color: #333;
+        }
+
+        .login-form {
+            margin-bottom: 2rem;
+        }
+
+        .admin-content {
+            display: none;
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 600;
+            color: #333;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 0.8rem;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+        }
+
+        .form-group input:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .btn {
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            color: white;
+            border: none;
+            padding: 0.8rem 1.5rem;
+            border-radius: 50px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            width: 100%;
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            position: relative;
+        }
+
+        .btn:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.3);
+        }
+
+        .btn:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            box-shadow: none;
+        }
+
+        .btn-danger {
+            background: linear-gradient(45deg, #dc3545, #c82333);
+        }
+
+        .btn-danger:hover:not(:disabled) {
+            box-shadow: 0 6px 20px rgba(220, 53, 69, 0.3);
+        }
+
+        .btn-success {
+            background: linear-gradient(45deg, #28a745, #218838);
+        }
+
+        .btn-success:hover:not(:disabled) {
+            box-shadow: 0 6px 20px rgba(40, 167, 69, 0.3);
+        }
+
+        .form-status {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .status-active {
+            color: #28a745;
+        }
+
+        .status-inactive {
+            color: #dc3545;
+        }
+
+        .alert {
+            padding: 1rem;
+            border-radius: 10px;
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .alert-success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .alert-error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        .alert-warning {
+            background: #fff3cd;
+            color: #856404;
+            border: 1px solid #ffeaa7;
+        }
+
+        .loading-spinner {
+            width: 20px;
+            height: 20px;
+            border: 2px solid #f3f3f3;
+            border-top: 2px solid #667eea;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-left: 0.5rem;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .form-options {
+                grid-template-columns: 1fr;
+            }
+            
+            .admin-panel {
+                width: 95%;
+                padding: 1rem;
+            }
+
+            .section-header h2 {
+                font-size: 2rem;
+            }
+
+            .header .container {
+                padding: 1rem 10px;
+            }
+
+            .go-back-btn {
+                padding: 0.5rem 1rem;
+                font-size: 0.9rem;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .form-option {
+                padding: 1.5rem;
+            }
+
+            .option-title {
+                font-size: 1.5rem;
+            }
+
+            .section-header h2 {
+                font-size: 1.8rem;
+            }
+        }
+    </style>
+</head>
+
+ <body>
+    <!-- Header Section -->
+    <header class="header">
+        <div class="container">
+            <div class="connection-status" id="connectionStatus">
+                <i class="fas fa-spinner fa-spin"></i>
+                <span>Checking connection...</span>
+            </div>
+            <div class="logo">
+                <img src="abc.png" alt="Logo" style="height: 50px;">
+                <span>Printoo</span>
+            </div>
+            <a href="index.html" class="go-back-btn">
+                <i class="fas fa-arrow-left"></i>
+                <span>Go Back</span>
+            </a>
+            <button class="secret-admin-btn" onclick="openAdminPanel()">
+                <i class="fas fa-cog"></i>
+                <span>Admin Panel</span>
+            </button>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <div class="container">
+            <!-- Section Header -->
+            <div class="section-header">
+                <h2>Choose Your Printing Option</h2>
+                <p>Select the option that best fits your printing needs</p>
+            </div>
+
+            <!-- Form Options -->
+            <div class="form-options">
+                <!-- Black & White Option -->
+                <div class="form-option">
+                    <div class="form-status-indicator status-inactive-indicator" id="bw-status">
+                        <i class="fas fa-exclamation-triangle"></i>
+                        <span>Setup Required</span>
+                    </div>
+                    <div class="option-icon">
+                        <i class="fas fa-file-alt"></i>
+                    </div>
+                    <h2 class="option-title">Black & White Only</h2>
+                    <p class="option-description">
+                        Perfect for documents, notes, assignments, and text-based content that doesn't require color.
+                    </p>
+                    <div class="option-price">
+                        <div class="price-text">₹2 per page</div>
+                    </div>
+                    <button class="select-btn" onclick="selectOption('bw')" id="bw-btn" disabled>
+                        <i class="fas fa-cog"></i>
+                        <span>Setup Required</span>
+                    </button>
+                </div>
+
+                <!-- Color Option -->
+                <div class="form-option">
+                    <div class="form-status-indicator status-inactive-indicator" id="color-status">
+                        <i class="fas fa-exclamation-triangle"></i>
+                        <span>Setup Required</span>
+                    </div>
+                    <div class="option-icon">
+                        <i class="fas fa-palette"></i>
+                    </div>
+                    <h2 class="option-title">Color Print Only</h2>
+                    <p class="option-description">
+                        Ideal for presentations, charts, graphs, images, and documents that require vibrant colors.
+                    </p>
+                    <div class="option-price">
+                        <div class="price-text">₹8 per page</div>
+                    </div>
+                    <button class="select-btn" onclick="selectOption('color')" id="color-btn" disabled>
+                        <i class="fas fa-cog"></i>
+                        <span>Setup Required</span>
+                    </button>
+                </div>
+
+                <!-- Certificate + Index Option -->
+                <div class="form-option">
+                    <div class="form-status-indicator status-inactive-indicator" id="project-status">
+                        <i class="fas fa-exclamation-triangle"></i>
+                        <span>Setup Required</span>
+                    </div>
+                    <div class="option-icon">
+                        <i class="fas fa-book"></i>
+                    </div>
+                    <h2 class="option-title">Index + Certificate</h2>
+                    <p class="option-description">
+                        A Single Bundle Will Contain 10 Certificate Pages, 20 Indexes
+                    </p>
+                    <div class="option-price">
+                        <div class="price-text">₹50/Bundle. </div>
+                    </div>
+                    <button class="select-btn" onclick="selectOption('project')" id="project-btn" disabled>
+                        <i class="fas fa-cog"></i>
+                        <span>Setup Required</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Admin Panel Overlay -->
+    <div class="admin-overlay" id="adminOverlay">
+        <div class="admin-panel">
+            <div class="admin-header">
+                <h2>
+                    <i class="fas fa-shield-alt"></i>
+                    <span>Admin Panel</span>
+                </h2>
+                <button class="close-btn" onclick="closeAdminPanel()">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+
+            <!-- Login Form -->
+            <div class="login-form" id="loginForm">
+                <div class="form-group">
+                    <label for="adminPassword">Admin Password</label>
+                    <input type="password" id="adminPassword" placeholder="Enter admin password">
+                </div>
+                <button class="btn" onclick="adminLogin()">
+                    <i class="fas fa-sign-in-alt"></i>
+                    <span>Login</span>
+                </button>
+            </div>
+
+            <!-- Admin Content -->
+            <div class="admin-content" id="adminContent">
+                <div id="alertContainer"></div>
+                
+                <div class="form-group">
+                    <label for="bwFormUrl">Black & White Form URL</label>
+                    <div class="form-status">
+                        <span id="bwFormStatus" class="status-inactive">
+                            <i class="fas fa-exclamation-triangle"></i>
+                            <span>Setup Required</span>
+                        </span>
+                    </div>
+                    <input type="url" id="bwFormUrl" placeholder="https://forms.gle/your-bw-form-id">
+                    <button class="btn" onclick="updateFormUrl('bw')" id="bwUpdateBtn">
+                        <i class="fas fa-save"></i>
+                        <span>Update B&W Form</span>
+                    </button>
+                    <button class="btn btn-danger" onclick="deleteForm('bw')" id="bwDeleteBtn">
+                        <i class="fas fa-trash"></i>
+                        <span>Delete Form</span>
+                    </button>
+                </div>
+
+                <div class="form-group">
+                    <label for="colorFormUrl">Color Print Form URL</label>
+                    <div class="form-status">
+                        <span id="colorFormStatus" class="status-inactive">
+                            <i class="fas fa-exclamation-triangle"></i>
+                            <span>Setup Required</span>
+                        </span>
+                    </div>
+                    <input type="url" id="colorFormUrl" placeholder="https://forms.gle/your-color-form-id">
+                    <button class="btn" onclick="updateFormUrl('color')" id="colorUpdateBtn">
+                        <i class="fas fa-save"></i>
+                        <span>Update Color Form</span>
+                    </button>
+                    <button class="btn btn-danger" onclick="deleteForm('color')" id="colorDeleteBtn">
+                        <i class="fas fa-trash"></i>
+                        <span>Delete Form</span>
+                    </button>
+                </div>
+
+                <div class="form-group">
+                    <label for="projectFormUrl">Project Report Form URL</label>
+                    <div class="form-status">
+                        <span id="projectFormStatus" class="status-inactive">
+                            <i class="fas fa-exclamation-triangle"></i>
+                            <span>Setup Required</span>
+                        </span>
+                    </div>
+                    <input type="url" id="projectFormUrl" placeholder="https://forms.gle/your-project-form-id">
+                    <button class="btn" onclick="updateFormUrl('project')" id="projectUpdateBtn">
+                        <i class="fas fa-save"></i>
+                        <span>Update Project Form</span>
+                    </button>
+                    <button class="btn btn-danger" onclick="deleteForm('project')" id="projectDeleteBtn">
+                        <i class="fas fa-trash"></i>
+                        <span>Delete Form</span>
+                    </button>
+                </div>
+
+                <div class="form-group">
+                    <button class="btn btn-danger" onclick="adminLogout()">
+                        <i class="fas fa-sign-out-alt"></i>
+                        <span>Logout</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Configuration
+        const SUPABASE_URL = 'https://uuzruhqzlerereaokzux.supabase.co';
+        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InV1enJ1aHF6bGVyZXJlYW9renV4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTI0MTA0NTYsImV4cCI6MjA2Nzk4NjQ1Nn0.e9wAxFfiTSG3XOQn4-pj78yYC14FSXlKsZIvkixB6y4';
+        const ADMIN_PASSWORD = 'TheDoraDog@9869';
+
+        let supabase;
+        let isSupabaseConnected = false;
+
+        // Form URLs storage - now only tracks active forms
+        let formUrls = {
+            bw: '',
+            color: '',
+            project: ''
+        };
+
+        // Initialize Supabase
+        function initializeSupabase() {
+            try {
+                supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+                    auth: {
+                        autoRefreshToken: true,
+                        persistSession: true,
+                        detectSessionInUrl: false
+                    }
+                });
+                console.log('Supabase client initialized successfully');
+                return true;
+            } catch (error) {
+                console.error('Supabase initialization error:', error);
+                return false;
+            }
+        }
+
+        // Check Supabase connection
+        async function checkSupabaseConnection() {
+            updateConnectionStatus('checking');
+            
+            try {
+                if (!supabase) {
+                    throw new Error('Supabase client not initialized');
+                }
+                
+                const { data, error } = await supabase
+                    .from('form_urls')
+                    .select('*')
+                    .limit(1);
+                
+                if (error) {
+                    throw error;
+                }
+                
+                console.log('Supabase connection successful');
+                isSupabaseConnected = true;
+                updateConnectionStatus('connected');
+                return true;
+            } catch (error) {
+                console.error('Supabase connection error:', error);
+                isSupabaseConnected = false;
+                updateConnectionStatus('error');
+                return false;
+            }
+        }
+
+        // Save form URL to database
+        async function saveFormUrl(type, url) {
+            try {
+                if (isSupabaseConnected) {
+                    console.log(`Saving ${type} form URL:`, url);
+                    
+                    const { data, error } = await supabase
+                        .from('form_urls')
+                        .upsert(
+                            {
+                                form_type: type,
+                                url: url,
+                                updated_at: new Date().toISOString()
+                            },
+                            {
+                                onConflict: 'form_type',
+                                ignoreDuplicates: false
+                            }
+                        );
+                    
+                    if (error) {
+                        console.error('Database error:', error);
+                        throw error;
+                    }
+                    
+                    console.log('Database operation successful');
+                    formUrls[type] = url;
+                    
+                    // Update localStorage backup
+                    localStorage.setItem('xerox_form_urls', JSON.stringify(formUrls));
+                    return { success: true, message: 'Form URL saved successfully!' };
+                    
+                } else {
+                    // Fallback to localStorage only
+                    console.log('Using localStorage fallback');
+                    formUrls[type] = url;
+                    localStorage.setItem('xerox_form_urls', JSON.stringify(formUrls));
+                    return { success: false, message: 'Database connection failed. Changes saved locally only.' };
+                }
+            } catch (error) {
+                console.error('Error saving form URL:', error);
+                
+                // Fallback to localStorage on any error
+                formUrls[type] = url;
+                localStorage.setItem('xerox_form_urls', JSON.stringify(formUrls));
+                
+                let errorMessage = 'Unknown error occurred';
+                if (error.message) {
+                    errorMessage = error.message;
+                }
+                
+                return { success: false, message: `Database error: ${errorMessage}. Changes saved locally only.` };
+            }
+        }
+
+        // Delete form from database
+        async function deleteFormFromDatabase(type) {
+            try {
+                if (isSupabaseConnected) {
+                    console.log(`Deleting ${type} form from database...`);
+                    
+                    const { error } = await supabase
+                        .from('form_urls')
+                        .delete()
+                        .eq('form_type', type);
+                    
+                    if (error) {
+                        console.error('Database error:', error);
+                        throw error;
+                    }
+                    
+                    console.log('Form deleted from database successfully');
+                    formUrls[type] = '';
+                    
+                    // Update localStorage backup
+                    localStorage.setItem('xerox_form_urls', JSON.stringify(formUrls));
+                    return { success: true, message: 'Form deleted successfully!' };
+                    
+                } else {
+                    // Fallback to localStorage only
+                    console.log('Using localStorage fallback');
+                    formUrls[type] = '';
+                    localStorage.setItem('xerox_form_urls', JSON.stringify(formUrls));
+                    return { success: false, message: 'Database connection failed. Changes saved locally only.' };
+                }
+            } catch (error) {
+                console.error('Error deleting form:', error);
+                
+                // Fallback to localStorage on any error
+                formUrls[type] = '';
+                localStorage.setItem('xerox_form_urls', JSON.stringify(formUrls));
+                
+                let errorMessage = 'Unknown error occurred';
+                if (error.message) {
+                    errorMessage = error.message;
+                }
+                
+                return { success: false, message: `Database error: ${errorMessage}. Changes saved locally only.` };
+            }
+        }
+
+        // Load form URLs from database or localStorage
+        async function loadFormUrls() {
+            try {
+                if (isSupabaseConnected) {
+                    console.log('Loading form URLs from database...');
+                    const { data, error } = await supabase
+                        .from('form_urls')
+                        .select('*');
+
+                    if (error) {
+                        throw error;
+                    }
+
+                    console.log('Loaded from database:', data);
+                    
+                    // Reset formUrls to empty first
+                    formUrls = {
+                        bw: '',
+                        color: '',
+                        project: ''
+                    };
+                    
+                    // Only populate if data exists in database
+                    if (data && data.length > 0) {
+                        data.forEach(item => {
+                            formUrls[item.form_type] = item.url || '';
+                        });
+                    }
+                    
+                    // Update localStorage backup
+                    localStorage.setItem('xerox_form_urls', JSON.stringify(formUrls));
+                    
+                } else {
+                    // Fallback to localStorage
+                    console.log('Loading from localStorage fallback...');
+                    const savedUrls = localStorage.getItem('xerox_form_urls');
+                    
+                    if (savedUrls) {
+                        formUrls = { ...formUrls, ...JSON.parse(savedUrls) };
+                    }
+                }
+            } catch (error) {
+                console.error('Error loading form URLs:', error);
+                
+                // Fallback to localStorage on error
+                console.log('Using localStorage fallback due to error');
+                const savedUrls = localStorage.getItem('xerox_form_urls');
+                
+                if (savedUrls) {
+                    formUrls = { ...formUrls, ...JSON.parse(savedUrls) };
+                }
+            }
+            
+            updateFormStatuses();
+        }
+
+        // Update connection status indicator
+        function updateConnectionStatus(status) {
+            const statusElement = document.getElementById('connectionStatus');
+            
+            switch (status) {
+                case 'connected':
+                    statusElement.className = 'connection-status connection-connected';
+                    statusElement.innerHTML = '<i class="fas fa-check-circle"></i><span>Connected</span>';
+                    break;
+                case 'error':
+                    statusElement.className = 'connection-status connection-error';
+                    statusElement.innerHTML = '<i class="fas fa-exclamation-triangle"></i><span>Connection Error</span>';
+                    break;
+                case 'checking':
+                    statusElement.className = 'connection-status connection-checking';
+                    statusElement.innerHTML = '<i class="fas fa-spinner fa-spin"></i><span>Checking...</span>';
+                    break;
+            }
+        }
+
+        // Admin Panel Functions
+        function openAdminPanel() {
+            document.getElementById('adminOverlay').style.display = 'block';
+            document.body.style.overflow = 'hidden';
+            document.getElementById('adminPassword').focus();
+            
+            // Hide the secret button after use
+            let secretBtn = document.querySelector('.secret-admin-btn');
+            secretBtn.classList.remove('visible');
+        }
+
+        function closeAdminPanel() {
+            document.getElementById('adminOverlay').style.display = 'none';
+            document.body.style.overflow = 'initial';
+            document.getElementById('adminPassword').value = '';
+            document.getElementById('loginForm').style.display = 'block';
+            document.getElementById('adminContent').style.display = 'none';
+            clearAlerts();
+        }
+
+        function adminLogin() {
+            const password = document.getElementById('adminPassword').value;
+            if (password === ADMIN_PASSWORD) {
+                document.getElementById('loginForm').style.display = 'none';
+                document.getElementById('adminContent').style.display = 'block';
+                loadAdminData();
+                showAlert('Login successful!', 'success');
+            } else {
+                showAlert('Invalid password!', 'error');
+            }
+        }
+
+        function adminLogout() {
+            document.getElementById('loginForm').style.display = 'block';
+            document.getElementById('adminContent').style.display = 'none';
+            document.getElementById('adminPassword').value = '';
+            clearAlerts();
+        }
+
+        function loadAdminData() {
+            // Load current URLs into admin inputs
+            document.getElementById('bwFormUrl').value = formUrls.bw || '';
+            document.getElementById('colorFormUrl').value = formUrls.color || '';
+            document.getElementById('projectFormUrl').value = formUrls.project || '';
+            
+            // Update form statuses in admin panel
+            updateAdminFormStatuses();
+        }
+
+        function updateAdminFormStatuses() {
+            const types = ['bw', 'color', 'project'];
+            
+            types.forEach(type => {
+                const statusElement = document.getElementById(`${type}FormStatus`);
+                const deleteBtn = document.getElementById(`${type}DeleteBtn`);
+                const url = formUrls[type];
+                
+                // Update status display
+                if (url && url.trim()) {
+                    statusElement.className = 'status-active';
+                    statusElement.innerHTML = '<i class="fas fa-check-circle"></i><span>Active</span>';
+                    deleteBtn.disabled = false;
+                } else {
+                    statusElement.className = 'status-inactive';
+                    statusElement.innerHTML = '<i class="fas fa-exclamation-triangle"></i><span>Setup Required</span>';
+                    deleteBtn.disabled = true;
+                }
+            });
+        }
+
+        async function updateFormUrl(type) {
+            const input = document.getElementById(`${type}FormUrl`);
+            const url = input.value.trim();
+            const btn = document.getElementById(`${type}UpdateBtn`);
+            
+            if (!url) {
+                showAlert('Please enter a valid URL', 'error');
+                return;
+            }
+            
+            // Validate URL format
+            if (!isValidUrl(url)) {
+                showAlert('Please enter a valid URL (must start with https://)', 'error');
+                return;
+            }
+            
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i><span>Updating...</span>';
+            
+            try {
+                const result = await saveFormUrl(type, url);
+                
+                if (result.success) {
+                    showAlert(result.message, 'success');
+                } else {
+                    showAlert(result.message, 'warning');
+                }
+                
+                updateFormStatuses();
+                updateAdminFormStatuses();
+            } catch (error) {
+                showAlert(`Error updating form: ${error.message}`, 'error');
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = `<i class="fas fa-save"></i><span>Update ${type.charAt(0).toUpperCase() + type.slice(1)} Form</span>`;
+            }
+        }
+
+        async function deleteForm(type) {
+            const btn = document.getElementById(`${type}DeleteBtn`);
+            const input = document.getElementById(`${type}FormUrl`);
+            
+            // Confirm deletion
+            if (!confirm(`Are you sure you want to delete the ${type} form? This will make it unavailable for all users.`)) {
+                return;
+            }
+            
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i><span>Deleting...</span>';
+            
+            try {
+                const result = await deleteFormFromDatabase(type);
+                
+                if (result.success) {
+                    showAlert(result.message, 'success');
+                    // Clear the input field
+                    input.value = '';
+                } else {
+                    showAlert(result.message, 'warning');
+                }
+                
+                updateFormStatuses();
+                updateAdminFormStatuses();
+            } catch (error) {
+                showAlert(`Error deleting form: ${error.message}`, 'error');
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = '<i class="fas fa-trash"></i><span>Delete Form</span>';
+            }
+        }
+
+        function isValidUrl(string) {
+            try {
+                const url = new URL(string);
+                return url.protocol === 'https:' || url.protocol === 'http:';
+            } catch (_) {
+                return false;
+            }
+        }
+
+        function showAlert(message, type = 'success') {
+            const alertContainer = document.getElementById('alertContainer');
+            const alert = document.createElement('div');
+            alert.className = `alert alert-${type}`;
+            
+            const icon = type === 'success' ? 'check-circle' : 
+                        type === 'error' ? 'exclamation-triangle' : 
+                        'info-circle';
+            
+            alert.innerHTML = `<i class="fas fa-${icon}"></i><span>${message}</span>`;
+            alertContainer.appendChild(alert);
+            
+            // Auto-remove alert after 5 seconds
+            setTimeout(() => {
+                if (alert.parentNode) {
+                    alert.remove();
+                }
+            }, 5000);
+        }
+
+        function clearAlerts() {
+            const alertContainer = document.getElementById('alertContainer');
+            alertContainer.innerHTML = '';
+        }
+
+        // Update form status indicators
+        function updateFormStatuses() {
+            const types = ['bw', 'color', 'project'];
+            
+            types.forEach(type => {
+                const statusElement = document.getElementById(`${type}-status`);
+                const btn = document.getElementById(`${type}-btn`);
+                const url = formUrls[type];
+                
+                if (url && url.trim()) {
+                    statusElement.className = 'form-status-indicator status-active-indicator';
+                    statusElement.innerHTML = '<i class="fas fa-check-circle"></i><span>Ready</span>';
+                    btn.disabled = false;
+                    btn.innerHTML = '<i class="fas fa-external-link-alt"></i><span>Start Order</span>';
+                } else {
+                    statusElement.className = 'form-status-indicator status-inactive-indicator';
+                    statusElement.innerHTML = '<i class="fas fa-exclamation-triangle"></i><span>Service Disabled</span>';
+                    btn.disabled = true;
+                    btn.innerHTML = '<i class="fas fa-ban"></i><span>Service Disabled</span>';
+                }
+            });
+        }
+
+        // Handle option selection
+        function selectOption(type) {
+            const url = formUrls[type];
+            
+            if (url && url.trim()) {
+                window.open(url, '_blank');
+            } else {
+                alert('This service is currently disabled. Please contact the administrator or try again later.');
+            }
+        }
+
+        // Secret admin panel activation with Ctrl+Shift+Q
+document.addEventListener('keydown', function(e) {
+    if (e.ctrlKey && e.shiftKey && e.key === 'Q') {
+        e.preventDefault();
+        openAdminPanel();
+    }
+});
+
+        // Handle Enter key in admin password field
+        document.getElementById('adminPassword').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                adminLogin();
+            }
+        });
+
+        // Initialize everything when page loads
+        document.addEventListener('DOMContentLoaded', async function() {
+            // Initialize Supabase
+            if (initializeSupabase()) {
+                await checkSupabaseConnection();
+            } else {
+                updateConnectionStatus('error');
+            }
+            
+            // Load form URLs and update UI
+            await loadFormUrls();
+            
+            // Close admin panel when clicking outside
+            document.getElementById('adminOverlay').addEventListener('click', function(e) {
+                if (e.target === this) {
+                    closeAdminPanel();
+                }
+            });
+        });
+
+        // Retry connection periodically if failed
+        setInterval(async () => {
+            if (!isSupabaseConnected) {
+                await checkSupabaseConnection();
+                if (isSupabaseConnected) {
+                    await loadFormUrls();
+                }
+            }
+        }, 30000); // Check every 30 seconds
+    </script>
+</body>
+
+</html>
