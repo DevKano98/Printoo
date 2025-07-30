@@ -166,6 +166,17 @@ body {
     transform: translateY(-2px);
 }
 
+/* Add this CSS class for the show state */
+.mobile-menu.show {
+    display: block !important;
+}
+
+/* Optional: Add styling for active toggle button */
+.mobile-menu-toggle.active {
+    background: rgba(102, 126, 234, 0.2);
+    transform: rotate(90deg);
+}        
+
 /* Main Content */
 .main-content {
     padding: 2rem 0;
@@ -1583,6 +1594,66 @@ window.addEventListener('load', function() {
             // Initial calculation
             calculateCost();
         });
+    </script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+    // Get the mobile menu toggle button and mobile menu elements
+    const mobileMenuToggle = document.querySelector('.mobile-menu-toggle');
+    const mobileMenu = document.querySelector('.mobile-menu');
+    
+    // Check if both elements exist
+    if (mobileMenuToggle && mobileMenu) {
+        
+        // Add click event listener to the toggle button
+        mobileMenuToggle.addEventListener('click', function(e) {
+            e.preventDefault(); // Prevent any default behavior
+            
+            // Toggle the mobile menu visibility
+            if (mobileMenu.style.display === 'none' || mobileMenu.style.display === '') {
+                mobileMenu.style.display = 'block';
+                // Optional: Add active class to toggle button for styling
+                mobileMenuToggle.classList.add('active');
+            } else {
+                mobileMenu.style.display = 'none';
+                mobileMenuToggle.classList.remove('active');
+            }
+        });
+        
+        // Close mobile menu when clicking on any menu item
+        const mobileMenuLinks = document.querySelectorAll('.mobile-menu a');
+        mobileMenuLinks.forEach(function(link) {
+            link.addEventListener('click', function() {
+                mobileMenu.style.display = 'none';
+                mobileMenuToggle.classList.remove('active');
+            });
+        });
+        
+        // Close mobile menu when clicking outside of it
+        document.addEventListener('click', function(event) {
+            // Check if the click is outside both the toggle button and the menu
+            if (!mobileMenuToggle.contains(event.target) && !mobileMenu.contains(event.target)) {
+                mobileMenu.style.display = 'none';
+                mobileMenuToggle.classList.remove('active');
+            }
+        });
+        
+        // Close mobile menu when pressing Escape key
+        document.addEventListener('keydown', function(event) {
+            if (event.key === 'Escape') {
+                mobileMenu.style.display = 'none';
+                mobileMenuToggle.classList.remove('active');
+            }
+        });
+        
+        // Handle window resize - hide mobile menu if screen becomes larger
+        window.addEventListener('resize', function() {
+            if (window.innerWidth > 768) {
+                mobileMenu.style.display = 'none';
+                mobileMenuToggle.classList.remove('active');
+            }
+        });
+    }
+});
     </script>
 </body>
 </html>
