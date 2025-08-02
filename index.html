@@ -1760,280 +1760,116 @@ window.addEventListener('load', function() {
 </script>
 
 <script>
+// Anti-inspect protection script
 (function() {
     'use strict';
     
-    let protected = false;
-    
-    function protect() {
-        if (!protected) {
-            protected = true;
-            document.documentElement.innerHTML = "";
-            document.head.innerHTML = "";
-            window.stop();
-        }
-    }
-    
-    // COMPREHENSIVE KEYBOARD BLOCKING
-    function blockAllDevToolsKeys(e) {
-        // F12 Key
-        if (e.keyCode === 123 || e.which === 123 || e.key === 'F12') {
-            e.preventDefault();
-            e.stopPropagation();
-            e.stopImmediatePropagation();
-            protect();
-            return false;
-        }
-        
-        // Ctrl+Shift+I (Inspector)
-        if ((e.ctrlKey || e.metaKey) && e.shiftKey && (e.keyCode === 73 || e.which === 73 || e.key === 'I' || e.key === 'i')) {
-            e.preventDefault();
-            e.stopPropagation();
-            e.stopImmediatePropagation();
-            protect();
-            return false;
-        }
-        
-        // Ctrl+Shift+J (Console)
-        if ((e.ctrlKey || e.metaKey) && e.shiftKey && (e.keyCode === 74 || e.which === 74 || e.key === 'J' || e.key === 'j')) {
-            e.preventDefault();
-            e.stopPropagation();
-            e.stopImmediatePropagation();
-            protect();
-            return false;
-        }
-        
-        // Ctrl+Shift+C (Element selector)
-        if ((e.ctrlKey || e.metaKey) && e.shiftKey && (e.keyCode === 67 || e.which === 67 || e.key === 'C' || e.key === 'c')) {
-            e.preventDefault();
-            e.stopPropagation();
-            e.stopImmediatePropagation();
-            protect();
-            return false;
-        }
-        
-        // Ctrl+U (View Source)
-        if ((e.ctrlKey || e.metaKey) && (e.keyCode === 85 || e.which === 85 || e.key === 'U' || e.key === 'u')) {
-            e.preventDefault();
-            e.stopPropagation();
-            e.stopImmediatePropagation();
-            protect();
-            return false;
-        }
-        
-        // Ctrl+S (Save Page)
-        if ((e.ctrlKey || e.metaKey) && (e.keyCode === 83 || e.which === 83 || e.key === 'S' || e.key === 's')) {
-            e.preventDefault();
-            e.stopPropagation();
-            e.stopImmediatePropagation();
-            protect();
-            return false;
-        }
-        
-        // Ctrl+Shift+K (Web Console in Firefox)
-        if ((e.ctrlKey || e.metaKey) && e.shiftKey && (e.keyCode === 75 || e.which === 75 || e.key === 'K' || e.key === 'k')) {
-            e.preventDefault();
-            e.stopPropagation();
-            e.stopImmediatePropagation();
-            protect();
-            return false;
-        }
-        
-        // Ctrl+Shift+E (Network tab in Firefox)
-        if ((e.ctrlKey || e.metaKey) && e.shiftKey && (e.keyCode === 69 || e.which === 69 || e.key === 'E' || e.key === 'e')) {
-            e.preventDefault();
-            e.stopPropagation();
-            e.stopImmediatePropagation();
-            protect();
-            return false;
-        }
-        
-        // F1 (Help - can lead to DevTools info)
-        if (e.keyCode === 112 || e.which === 112 || e.key === 'F1') {
-            e.preventDefault();
-            e.stopPropagation();
-            e.stopImmediatePropagation();
-            protect();
-            return false;
-        }
-        
-        // Alt+Cmd+I (Safari DevTools)
-        if (e.altKey && e.metaKey && (e.keyCode === 73 || e.which === 73 || e.key === 'I' || e.key === 'i')) {
-            e.preventDefault();
-            e.stopPropagation();
-            e.stopImmediatePropagation();
-            protect();
-            return false;
-        }
-        
-        // Alt+Cmd+C (Safari Element Inspector)
-        if (e.altKey && e.metaKey && (e.keyCode === 67 || e.which === 67 || e.key === 'C' || e.key === 'c')) {
-            e.preventDefault();
-            e.stopPropagation();
-            e.stopImmediatePropagation();
-            protect();
-            return false;
-        }
-        
-        // Ctrl+Shift+M (Mobile view)
-        if ((e.ctrlKey || e.metaKey) && e.shiftKey && (e.keyCode === 77 || e.which === 77 || e.key === 'M' || e.key === 'm')) {
-            e.preventDefault();
-            e.stopPropagation();
-            e.stopImmediatePropagation();
-            protect();
-            return false;
-        }
-        
-        // Block any F-key (F1-F12)
-        if (e.keyCode >= 112 && e.keyCode <= 123) {
-            e.preventDefault();
-            e.stopPropagation();
-            e.stopImmediatePropagation();
-            protect();
-            return false;
-        }
-    }
-    
-    // ATTACH MULTIPLE EVENT LISTENERS FOR COMPREHENSIVE BLOCKING
-    function attachKeyboardProtection() {
-        // Multiple event types
-        ['keydown', 'keypress', 'keyup'].forEach(function(eventType) {
-            // Document level
-            document.addEventListener(eventType, blockAllDevToolsKeys, true);
-            // Window level
-            window.addEventListener(eventType, blockAllDevToolsKeys, true);
-            // Body level (when it exists)
-            if (document.body) {
-                document.body.addEventListener(eventType, blockAllDevToolsKeys, true);
-            }
-        });
-        
-        // Also attach to the document element
-        if (document.documentElement) {
-            ['keydown', 'keypress', 'keyup'].forEach(function(eventType) {
-                document.documentElement.addEventListener(eventType, blockAllDevToolsKeys, true);
-            });
-        }
-    }
-    
-    // IMMEDIATE PROTECTION
-    (function immediateProtection() {
-        // Start keyboard protection immediately
-        attachKeyboardProtection();
-        
-        // Block right-click
-        document.addEventListener('contextmenu', function(e) {
-            e.preventDefault();
-            e.stopPropagation();
-            e.stopImmediatePropagation();
-            protect();
-            return false;
-        }, true);
-        
-        // Detect if DevTools is already open
-        const start = performance.now();
-        debugger;
-        const end = performance.now();
-        if (end - start > 100) {
-            protect();
-        }
-    })();
-    
-    // CONTINUOUS MONITORING
-    function startMonitoring() {
-        // Re-attach keyboard protection (in case something removed it)
-        attachKeyboardProtection();
-        
-        // Debugger detection
-        setInterval(function() {
-            const before = performance.now();
-            debugger;
-            const after = performance.now();
-            if (after - before > 100) {
-                protect();
-            }
-        }, 500);
-        
-        // Console detection
-        setInterval(function() {
-            const element = new Image();
-            let triggered = false;
-            Object.defineProperty(element, 'id', {
-                get: function() {
-                    triggered = true;
-                    return '';
-                }
-            });
-            console.log('%c', element);
-            console.clear();
-            if (triggered) {
-                protect();
-            }
-        }, 1000);
-        
-        // Window size monitoring
-        let lastHeight = window.innerHeight;
-        let lastWidth = window.innerWidth;
-        
-        setInterval(function() {
-            if (window.innerHeight < lastHeight - 200 || 
-                window.innerWidth < lastWidth - 200) {
-                protect();
-            }
-            
-            if (window.outerHeight - window.innerHeight > 200 ||
-                window.outerWidth - window.innerWidth > 200) {
-                protect();
-            }
-            
-            lastHeight = window.innerHeight;
-            lastWidth = window.innerWidth;
-        }, 300);
-    }
-    
-    // Override key event handlers
-    document.onkeydown = function(e) {
-        return !blockAllDevToolsKeys(e || window.event);
-    };
-    
-    document.onkeypress = function(e) {
-        return !blockAllDevToolsKeys(e || window.event);
-    };
-    
-    document.onkeyup = function(e) {
-        return !blockAllDevToolsKeys(e || window.event);
-    };
-    
-    // START PROTECTION
-    if (document.readyState === 'loading') {
-        document.addEventListener('DOMContentLoaded', startMonitoring);
-    } else {
-        startMonitoring();
-    }
-    
-    window.addEventListener('load', function() {
-        startMonitoring();
-        // Re-attach after page loads
-        setTimeout(attachKeyboardProtection, 100);
-    });
-    
-    // Additional protection
-    document.addEventListener('selectstart', function(e) {
+    // Disable right-click context menu
+    document.addEventListener('contextmenu', function(e) {
         e.preventDefault();
+        alert('Right-click is disabled!');
         return false;
     });
     
-    document.addEventListener('dragstart', function(e) {
-        e.preventDefault();
-        protect();
-        return false;
+    // Disable keyboard shortcuts
+    document.addEventListener('keydown', function(e) {
+        // F12 - Developer Tools
+        if (e.keyCode === 123) {
+            e.preventDefault();
+            alert('Developer tools are disabled!');
+            return false;
+        }
+        // Ctrl+Shift+I - Inspector
+        if (e.ctrlKey && e.shiftKey && e.keyCode === 73) {
+            e.preventDefault();
+            alert('Inspector is disabled!');
+            return false;
+        }
+        // Ctrl+Shift+J - Console
+        if (e.ctrlKey && e.shiftKey && e.keyCode === 74) {
+            e.preventDefault();
+            alert('Console is disabled!');
+            return false;
+        }
+        // Ctrl+U - View Source
+        if (e.ctrlKey && e.keyCode === 85) {
+            e.preventDefault();
+            alert('View source is disabled!');
+            return false;
+        }
+        // Ctrl+Shift+C - Element selector
+        if (e.ctrlKey && e.shiftKey && e.keyCode === 67) {
+            e.preventDefault();
+            alert('Element selector is disabled!');
+            return false;
+        }
+        // Ctrl+A - Select All
+        if (e.ctrlKey && e.keyCode === 65) {
+            e.preventDefault();
+            return false;
+        }
+        // Ctrl+S - Save
+        if (e.ctrlKey && e.keyCode === 83) {
+            e.preventDefault();
+            return false;
+        }
+        // Ctrl+P - Print
+        if (e.ctrlKey && e.keyCode === 80) {
+            e.preventDefault();
+            return false;
+        }
     });
     
-    document.addEventListener('copy', function(e) {
-        e.preventDefault();
-        protect();
-        return false;
+    // Detect DevTools by checking console
+    let devtools = false;
+    let element = new Image();
+    Object.defineProperty(element, 'id', {
+        get: function() {
+            devtools = true;
+            alert('Developer tools detected! Please close them.');
+            window.location.reload();
+        }
     });
+    setInterval(function() {
+        devtools = false;
+        console.log(element);
+        console.clear();
+    }, 1000);
+    
+    // Disable text selection
+    document.onselectstart = function() {
+        return false;
+    };
+    document.onmousedown = function() {
+        return false;
+    };
+    
+    // Disable drag
+    document.ondragstart = function() {
+        return false;
+    };
+    
+    // Clear console periodically
+    setInterval(function() {
+        console.clear();
+    }, 2000);
+    
+    // Detect if DevTools is open by window size
+    let devToolsOpen = false;
+    let threshold = 160;
+    
+    setInterval(function() {
+        if (window.outerHeight - window.innerHeight > threshold || 
+            window.outerWidth - window.innerWidth > threshold) {
+            if (!devToolsOpen) {
+                devToolsOpen = true;
+                alert('Please close developer tools!');
+                window.location.reload();
+            }
+        } else {
+            devToolsOpen = false;
+        }
+    }, 500);
     
 })();
 </script>
@@ -2041,6 +1877,7 @@ window.addEventListener('load', function() {
        
 </body>
 </html>
+
 
 
 
