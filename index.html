@@ -1827,9 +1827,48 @@ console.log('%cSTOP!', 'color: red; font-size: 50px; font-weight: bold;');
 console.log('%cThis is a browser feature intended for developers. If someone told you to copy-paste something here, it is a scam and will give them access to your account.', 'color: red; font-size: 16px;');
 </script> 
 
+<script>
+// 1. Detect DevTools using timing (debugger delay)
+setInterval(() => {
+  const start = performance.now();
+  debugger;
+  const end = performance.now();
+  if (end - start > 100) {
+    document.body.innerHTML = '';
+    alert("DevTools is not allowed.");
+    window.location.replace("about:blank"); // or redirect to another site
+  }
+}, 1000);
+
+// 2. Detect DevTools using window size difference
+(function() {
+  const threshold = 160;
+  setInterval(() => {
+    if (
+      window.outerWidth - window.innerWidth > threshold ||
+      window.outerHeight - window.innerHeight > threshold
+    ) {
+      document.body.innerHTML = '';
+      alert("DevTools detected.");
+      window.location.replace("about:blank");
+    }
+  }, 1000);
+})();
+
+// 3. Detect open console with toString override trick
+setInterval(() => {
+  const devtools = /./;
+  devtools.toString = function () {
+    window.location.replace("about:blank");
+  };
+  console.log('%c', devtools);
+}, 1500);
+</script>
+        
 
        
 </body>
 </html>
+
 
 
