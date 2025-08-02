@@ -1760,123 +1760,194 @@ window.addEventListener('load', function() {
 </script>
 
 <script>
-// Anti-inspect protection script
+// Enhanced Anti-inspect protection script
 (function() {
     'use strict';
     
-    // Disable right-click context menu
+    // Multiple event listeners for right-click
     document.addEventListener('contextmenu', function(e) {
         e.preventDefault();
-        alert('Right-click is disabled!');
+        e.stopPropagation();
         return false;
-    });
+    }, true);
     
-    // Disable keyboard shortcuts
+    document.oncontextmenu = function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        return false;
+    };
+    
+    // Disable keyboard shortcuts with multiple methods
     document.addEventListener('keydown', function(e) {
-        // F12 - Developer Tools
+        e = e || window.event;
+        
+        // F12
         if (e.keyCode === 123) {
             e.preventDefault();
-            alert('Developer tools are disabled!');
+            e.stopPropagation();
             return false;
         }
-        // Ctrl+Shift+I - Inspector
+        // Ctrl+Shift+I
         if (e.ctrlKey && e.shiftKey && e.keyCode === 73) {
             e.preventDefault();
-            alert('Inspector is disabled!');
+            e.stopPropagation();
             return false;
         }
-        // Ctrl+Shift+J - Console
+        // Ctrl+Shift+J
         if (e.ctrlKey && e.shiftKey && e.keyCode === 74) {
             e.preventDefault();
-            alert('Console is disabled!');
+            e.stopPropagation();
             return false;
         }
-        // Ctrl+U - View Source
+        // Ctrl+U
         if (e.ctrlKey && e.keyCode === 85) {
             e.preventDefault();
-            alert('View source is disabled!');
+            e.stopPropagation();
             return false;
         }
-        // Ctrl+Shift+C - Element selector
+        // Ctrl+Shift+C
         if (e.ctrlKey && e.shiftKey && e.keyCode === 67) {
             e.preventDefault();
-            alert('Element selector is disabled!');
+            e.stopPropagation();
             return false;
         }
-        // Ctrl+A - Select All
+        // Ctrl+A
         if (e.ctrlKey && e.keyCode === 65) {
             e.preventDefault();
+            e.stopPropagation();
             return false;
         }
-        // Ctrl+S - Save
+        // Ctrl+S
         if (e.ctrlKey && e.keyCode === 83) {
             e.preventDefault();
+            e.stopPropagation();
             return false;
         }
-        // Ctrl+P - Print
+        // Ctrl+P
         if (e.ctrlKey && e.keyCode === 80) {
+            e.preventDefault();
+            e.stopPropagation();
+            return false;
+        }
+    }, true);
+    
+    // Also bind to keyup and keypress
+    document.addEventListener('keyup', function(e) {
+        if (e.keyCode === 123 || (e.ctrlKey && (e.keyCode === 85 || e.keyCode === 73 || e.keyCode === 74))) {
             e.preventDefault();
             return false;
         }
-    });
+    }, true);
     
-    // Detect DevTools by checking console
+    // Disable text selection multiple ways
+    document.onselectstart = function() { return false; };
+    document.onmousedown = function() { return false; };
+    document.ondragstart = function() { return false; };
+    
+    // CSS to disable selection
+    var style = document.createElement('style');
+    style.innerHTML = `
+        * {
+            -webkit-user-select: none !important;
+            -moz-user-select: none !important;
+            -ms-user-select: none !important;
+            user-select: none !important;
+            -webkit-touch-callout: none !important;
+        }
+        *::selection { background: transparent !important; }
+        *::-moz-selection { background: transparent !important; }
+    `;
+    document.head.appendChild(style);
+    
+    // Advanced DevTools detection
     let devtools = false;
+    let threshold = 160;
+    
+    // Method 1: Console detection
     let element = new Image();
     Object.defineProperty(element, 'id', {
         get: function() {
             devtools = true;
-            alert('Developer tools detected! Please close them.');
-            window.location.reload();
+            document.body.innerHTML = '<h1>Access Denied</h1><p>Developer tools detected!</p>';
+            throw new Error('Developer tools detected');
         }
     });
-    setInterval(function() {
-        devtools = false;
-        console.log(element);
-        console.clear();
-    }, 1000);
     
-    // Disable text selection
-    document.onselectstart = function() {
-        return false;
-    };
-    document.onmousedown = function() {
-        return false;
-    };
-    
-    // Disable drag
-    document.ondragstart = function() {
-        return false;
-    };
-    
-    // Clear console periodically
-    setInterval(function() {
-        console.clear();
-    }, 2000);
-    
-    // Detect if DevTools is open by window size
-    let devToolsOpen = false;
-    let threshold = 160;
-    
+    // Method 2: Window size detection
     setInterval(function() {
         if (window.outerHeight - window.innerHeight > threshold || 
             window.outerWidth - window.innerWidth > threshold) {
-            if (!devToolsOpen) {
-                devToolsOpen = true;
-                alert('Please close developer tools!');
-                window.location.reload();
-            }
-        } else {
-            devToolsOpen = false;
+            document.body.innerHTML = '<h1>Access Denied</h1><p>Please close developer tools!</p>';
         }
-    }, 500);
+    }, 100);
+    
+    // Method 3: Console clear and check
+    setInterval(function() {
+        devtools = false;
+        console.log(element);
+        console.log(new Date());
+        console.clear();
+        if (devtools) {
+            document.body.innerHTML = '<h1>Access Denied</h1>';
+        }
+    }, 1000);
+    
+    // Method 4: Performance detection
+    setInterval(function() {
+        var start = performance.now();
+        debugger;
+        var end = performance.now();
+        if (end - start > 100) {
+            document.body.innerHTML = '<h1>Access Denied</h1><p>Debugger detected!</p>';
+        }
+    }, 1000);
+    
+    // Disable common browser functions
+    window.addEventListener('beforeunload', function(e) {
+        e.preventDefault();
+        e.returnValue = '';
+    });
+    
+    // Override console methods
+    if (typeof console !== 'undefined') {
+        console.log = function() {};
+        console.warn = function() {};
+        console.error = function() {};
+        console.info = function() {};
+        console.debug = function() {};
+        console.trace = function() {};
+    }
+    
+    // Blur window when DevTools might be open
+    let blurred = false;
+    setInterval(function() {
+        if (window.outerHeight - window.innerHeight > threshold && !blurred) {
+            document.body.style.filter = 'blur(10px)';
+            blurred = true;
+        } else if (window.outerHeight - window.innerHeight <= threshold && blurred) {
+            document.body.style.filter = 'none';
+            blurred = false;
+        }
+    }, 100);
     
 })();
+
+// Execute immediately and on DOM ready
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', function() {
+        // Additional protection after DOM loads
+        document.body.style.webkitUserSelect = 'none';
+        document.body.style.mozUserSelect = 'none';
+        document.body.style.msUserSelect = 'none';
+        document.body.style.userSelect = 'none';
+    });
+}
 </script>
 
        
 </body>
 </html>
+
 
 
 
