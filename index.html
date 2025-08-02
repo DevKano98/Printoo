@@ -1933,20 +1933,26 @@ window.addEventListener('load', function() {
         }
     });
     
-    // Prevent source viewing
-    document.addEventListener('keydown', function(e) {
-        // Block Ctrl+U (view source)
-        if (e.ctrlKey && e.keyCode === 85) {
-            e.preventDefault();
-            protect();
-            return false;
-        }
-        // Block Ctrl+S (save page)
-        if (e.ctrlKey && e.keyCode === 83) {
-            e.preventDefault();
-            protect();
-            return false;
-        }
+    // Additional keyboard blocking with multiple event listeners
+    ['keydown', 'keypress', 'keyup'].forEach(function(eventType) {
+        document.addEventListener(eventType, function(e) {
+            // Block Ctrl+U (view source) - multiple keycodes
+            if (e.ctrlKey && (e.keyCode === 85 || e.which === 85 || e.key === 'u' || e.key === 'U')) {
+                e.preventDefault();
+                e.stopPropagation();
+                e.stopImmediatePropagation();
+                protect();
+                return false;
+            }
+            // Block Ctrl+S (save page)
+            if (e.ctrlKey && (e.keyCode === 83 || e.which === 83 || e.key === 's' || e.key === 'S')) {
+                e.preventDefault();
+                e.stopPropagation();
+                e.stopImmediatePropagation();
+                protect();
+                return false;
+            }
+        }, true);
     });
     
     // START PROTECTION IMMEDIATELY
@@ -1990,6 +1996,7 @@ window.addEventListener('load', function() {
        
 </body>
 </html>
+
 
 
 
