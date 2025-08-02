@@ -1828,47 +1828,46 @@ console.log('%cThis is a browser feature intended for developers. If someone tol
 </script> 
 
 <script>
-// 1. Detect DevTools using timing (debugger delay)
-setInterval(() => {
-  const start = performance.now();
-  debugger;
-  const end = performance.now();
-  if (end - start > 100) {
-    document.body.innerHTML = '';
-    alert("DevTools is not allowed.");
-    window.location.replace("about:blank"); // or redirect to another site
-  }
-}, 1000);
+// === BLANK PAGE ON DEVTOOLS OPEN ===
 
-// 2. Detect DevTools using window size difference
-(function() {
-  const threshold = 160;
+(function blankOnInspect() {
+  // Timing-based debugger detection
   setInterval(() => {
-    if (
-      window.outerWidth - window.innerWidth > threshold ||
-      window.outerHeight - window.innerHeight > threshold
-    ) {
-      document.body.innerHTML = '';
-      alert("DevTools detected.");
-      window.location.replace("about:blank");
+    const start = performance.now();
+    debugger;
+    const end = performance.now();
+    const delay = end - start;
+    if (delay > 150) {
+      document.documentElement.innerHTML = ""; // Blank the entire page
     }
   }, 1000);
-})();
 
-// 3. Detect open console with toString override trick
-setInterval(() => {
-  const devtools = /./;
-  devtools.toString = function () {
-    window.location.replace("about:blank");
-  };
-  console.log('%c', devtools);
-}, 1500);
+  // Size-based detection (if DevTools is docked)
+  const threshold = 160;
+  setInterval(() => {
+    const widthDiff = window.outerWidth - window.innerWidth;
+    const heightDiff = window.outerHeight - window.innerHeight;
+    if (widthDiff > threshold || heightDiff > threshold) {
+      document.documentElement.innerHTML = "";
+    }
+  }, 1000);
+
+  // Console open detection using toString override trick
+  setInterval(() => {
+    const devtools = /./;
+    devtools.toString = function () {
+      document.documentElement.innerHTML = "";
+    };
+    console.log('%c', devtools);
+  }, 1500);
+})();
 </script>
-        
+
 
        
 </body>
 </html>
+
 
 
 
