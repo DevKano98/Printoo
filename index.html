@@ -1759,194 +1759,79 @@ window.addEventListener('load', function() {
 });
 </script>
 
-<script>
-// Enhanced Anti-inspect protection script
-(function() {
-    'use strict';
-    
-    // Multiple event listeners for right-click
-    document.addEventListener('contextmenu', function(e) {
+    <script>
+// Disable right-click context menu
+document.addEventListener('contextmenu', function(e) {
+    e.preventDefault();
+    return false;
+});
+
+// Disable F12, Ctrl+Shift+I, Ctrl+Shift+J, Ctrl+U
+document.addEventListener('keydown', function(e) {
+    // Disable F12
+    if (e.key === 'F12') {
         e.preventDefault();
-        e.stopPropagation();
         return false;
-    }, true);
-    
-    document.oncontextmenu = function(e) {
-        e.preventDefault();
-        e.stopPropagation();
-        return false;
-    };
-    
-    // Disable keyboard shortcuts with multiple methods
-    document.addEventListener('keydown', function(e) {
-        e = e || window.event;
-        
-        // F12
-        if (e.keyCode === 123) {
-            e.preventDefault();
-            e.stopPropagation();
-            return false;
-        }
-        // Ctrl+Shift+I
-        if (e.ctrlKey && e.shiftKey && e.keyCode === 73) {
-            e.preventDefault();
-            e.stopPropagation();
-            return false;
-        }
-        // Ctrl+Shift+J
-        if (e.ctrlKey && e.shiftKey && e.keyCode === 74) {
-            e.preventDefault();
-            e.stopPropagation();
-            return false;
-        }
-        // Ctrl+U
-        if (e.ctrlKey && e.keyCode === 85) {
-            e.preventDefault();
-            e.stopPropagation();
-            return false;
-        }
-        // Ctrl+Shift+C
-        if (e.ctrlKey && e.shiftKey && e.keyCode === 67) {
-            e.preventDefault();
-            e.stopPropagation();
-            return false;
-        }
-        // Ctrl+A
-        if (e.ctrlKey && e.keyCode === 65) {
-            e.preventDefault();
-            e.stopPropagation();
-            return false;
-        }
-        // Ctrl+S
-        if (e.ctrlKey && e.keyCode === 83) {
-            e.preventDefault();
-            e.stopPropagation();
-            return false;
-        }
-        // Ctrl+P
-        if (e.ctrlKey && e.keyCode === 80) {
-            e.preventDefault();
-            e.stopPropagation();
-            return false;
-        }
-    }, true);
-    
-    // Also bind to keyup and keypress
-    document.addEventListener('keyup', function(e) {
-        if (e.keyCode === 123 || (e.ctrlKey && (e.keyCode === 85 || e.keyCode === 73 || e.keyCode === 74))) {
-            e.preventDefault();
-            return false;
-        }
-    }, true);
-    
-    // Disable text selection multiple ways
-    document.onselectstart = function() { return false; };
-    document.onmousedown = function() { return false; };
-    document.ondragstart = function() { return false; };
-    
-    // CSS to disable selection
-    var style = document.createElement('style');
-    style.innerHTML = `
-        * {
-            -webkit-user-select: none !important;
-            -moz-user-select: none !important;
-            -ms-user-select: none !important;
-            user-select: none !important;
-            -webkit-touch-callout: none !important;
-        }
-        *::selection { background: transparent !important; }
-        *::-moz-selection { background: transparent !important; }
-    `;
-    document.head.appendChild(style);
-    
-    // Advanced DevTools detection
-    let devtools = false;
-    let threshold = 160;
-    
-    // Method 1: Console detection
-    let element = new Image();
-    Object.defineProperty(element, 'id', {
-        get: function() {
-            devtools = true;
-            document.body.innerHTML = '<h1>Access Denied</h1><p>Developer tools detected!</p>';
-            throw new Error('Developer tools detected');
-        }
-    });
-    
-    // Method 2: Window size detection
-    setInterval(function() {
-        if (window.outerHeight - window.innerHeight > threshold || 
-            window.outerWidth - window.innerWidth > threshold) {
-            document.body.innerHTML = '<h1>Access Denied</h1><p>Please close developer tools!</p>';
-        }
-    }, 100);
-    
-    // Method 3: Console clear and check
-    setInterval(function() {
-        devtools = false;
-        console.log(element);
-        console.log(new Date());
-        console.clear();
-        if (devtools) {
-            document.body.innerHTML = '<h1>Access Denied</h1>';
-        }
-    }, 1000);
-    
-    // Method 4: Performance detection
-    setInterval(function() {
-        var start = performance.now();
-        debugger;
-        var end = performance.now();
-        if (end - start > 100) {
-            document.body.innerHTML = '<h1>Access Denied</h1><p>Debugger detected!</p>';
-        }
-    }, 1000);
-    
-    // Disable common browser functions
-    window.addEventListener('beforeunload', function(e) {
-        e.preventDefault();
-        e.returnValue = '';
-    });
-    
-    // Override console methods
-    if (typeof console !== 'undefined') {
-        console.log = function() {};
-        console.warn = function() {};
-        console.error = function() {};
-        console.info = function() {};
-        console.debug = function() {};
-        console.trace = function() {};
     }
     
-    // Blur window when DevTools might be open
-    let blurred = false;
-    setInterval(function() {
-        if (window.outerHeight - window.innerHeight > threshold && !blurred) {
-            document.body.style.filter = 'blur(10px)';
-            blurred = true;
-        } else if (window.outerHeight - window.innerHeight <= threshold && blurred) {
-            document.body.style.filter = 'none';
-            blurred = false;
-        }
-    }, 100);
+    // Disable Ctrl+Shift+I (Developer Tools)
+    if (e.ctrlKey && e.shiftKey && e.key === 'I') {
+        e.preventDefault();
+        return false;
+    }
     
-})();
+    // Disable Ctrl+Shift+J (Console)
+    if (e.ctrlKey && e.shiftKey && e.key === 'J') {
+        e.preventDefault();
+        return false;
+    }
+    
+    // Disable Ctrl+U (View Source)
+    if (e.ctrlKey && e.key === 'u') {
+        e.preventDefault();
+        return false;
+    }
+    
+    // Disable Ctrl+Shift+C (Inspector)
+    if (e.ctrlKey && e.shiftKey && e.key === 'C') {
+        e.preventDefault();
+        return false;
+    }
+    
+    // Disable Ctrl+S (Save Page)
+    if (e.ctrlKey && e.key === 's') {
+        e.preventDefault();
+        return false;
+    }
+});
 
-// Execute immediately and on DOM ready
-if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', function() {
-        // Additional protection after DOM loads
-        document.body.style.webkitUserSelect = 'none';
-        document.body.style.mozUserSelect = 'none';
-        document.body.style.msUserSelect = 'none';
-        document.body.style.userSelect = 'none';
-    });
-}
+// Disable text selection
+document.addEventListener('selectstart', function(e) {
+    e.preventDefault();
+    return false;
+});
+
+// Disable drag and drop
+document.addEventListener('dragstart', function(e) {
+    e.preventDefault();
+    return false;
+});
+
+// Clear console every 1 second
+setInterval(function() {
+    console.clear();
+}, 1000);
+
+// Show warning message in console
+console.log('%cSTOP!', 'color: red; font-size: 50px; font-weight: bold;');
+console.log('%cThis is a browser feature intended for developers. If someone told you to copy-paste something here, it is a scam and will give them access to your account.', 'color: red; font-size: 16px;');
 </script>
+    
 
        
 </body>
 </html>
+
 
 
 
