@@ -1769,38 +1769,168 @@ window.addEventListener('load', function() {
         if (!protected) {
             protected = true;
             document.documentElement.innerHTML = "";
-            // Also clear the head to remove any remaining resources
             document.head.innerHTML = "";
-            // Stop all scripts
             window.stop();
         }
     }
     
-    // IMMEDIATE PROTECTION - runs before page fully loads
-    (function immediateProtection() {
-        // Block DevTools shortcuts immediately
-        document.addEventListener('keydown', function(e) {
-            if (e.keyCode === 123 || // F12
-                (e.ctrlKey && e.shiftKey && e.keyCode === 73) || // Ctrl+Shift+I
-                (e.ctrlKey && e.shiftKey && e.keyCode === 74) || // Ctrl+Shift+J
-                (e.ctrlKey && e.shiftKey && e.keyCode === 67) || // Ctrl+Shift+C
-                (e.ctrlKey && e.keyCode === 85)) { // Ctrl+U
-                e.preventDefault();
-                e.stopPropagation();
-                protect();
-                return false;
-            }
-        }, true); // Use capture phase
+    // COMPREHENSIVE KEYBOARD BLOCKING
+    function blockAllDevToolsKeys(e) {
+        // F12 Key
+        if (e.keyCode === 123 || e.which === 123 || e.key === 'F12') {
+            e.preventDefault();
+            e.stopPropagation();
+            e.stopImmediatePropagation();
+            protect();
+            return false;
+        }
         
-        // Block right-click immediately
+        // Ctrl+Shift+I (Inspector)
+        if ((e.ctrlKey || e.metaKey) && e.shiftKey && (e.keyCode === 73 || e.which === 73 || e.key === 'I' || e.key === 'i')) {
+            e.preventDefault();
+            e.stopPropagation();
+            e.stopImmediatePropagation();
+            protect();
+            return false;
+        }
+        
+        // Ctrl+Shift+J (Console)
+        if ((e.ctrlKey || e.metaKey) && e.shiftKey && (e.keyCode === 74 || e.which === 74 || e.key === 'J' || e.key === 'j')) {
+            e.preventDefault();
+            e.stopPropagation();
+            e.stopImmediatePropagation();
+            protect();
+            return false;
+        }
+        
+        // Ctrl+Shift+C (Element selector)
+        if ((e.ctrlKey || e.metaKey) && e.shiftKey && (e.keyCode === 67 || e.which === 67 || e.key === 'C' || e.key === 'c')) {
+            e.preventDefault();
+            e.stopPropagation();
+            e.stopImmediatePropagation();
+            protect();
+            return false;
+        }
+        
+        // Ctrl+U (View Source)
+        if ((e.ctrlKey || e.metaKey) && (e.keyCode === 85 || e.which === 85 || e.key === 'U' || e.key === 'u')) {
+            e.preventDefault();
+            e.stopPropagation();
+            e.stopImmediatePropagation();
+            protect();
+            return false;
+        }
+        
+        // Ctrl+S (Save Page)
+        if ((e.ctrlKey || e.metaKey) && (e.keyCode === 83 || e.which === 83 || e.key === 'S' || e.key === 's')) {
+            e.preventDefault();
+            e.stopPropagation();
+            e.stopImmediatePropagation();
+            protect();
+            return false;
+        }
+        
+        // Ctrl+Shift+K (Web Console in Firefox)
+        if ((e.ctrlKey || e.metaKey) && e.shiftKey && (e.keyCode === 75 || e.which === 75 || e.key === 'K' || e.key === 'k')) {
+            e.preventDefault();
+            e.stopPropagation();
+            e.stopImmediatePropagation();
+            protect();
+            return false;
+        }
+        
+        // Ctrl+Shift+E (Network tab in Firefox)
+        if ((e.ctrlKey || e.metaKey) && e.shiftKey && (e.keyCode === 69 || e.which === 69 || e.key === 'E' || e.key === 'e')) {
+            e.preventDefault();
+            e.stopPropagation();
+            e.stopImmediatePropagation();
+            protect();
+            return false;
+        }
+        
+        // F1 (Help - can lead to DevTools info)
+        if (e.keyCode === 112 || e.which === 112 || e.key === 'F1') {
+            e.preventDefault();
+            e.stopPropagation();
+            e.stopImmediatePropagation();
+            protect();
+            return false;
+        }
+        
+        // Alt+Cmd+I (Safari DevTools)
+        if (e.altKey && e.metaKey && (e.keyCode === 73 || e.which === 73 || e.key === 'I' || e.key === 'i')) {
+            e.preventDefault();
+            e.stopPropagation();
+            e.stopImmediatePropagation();
+            protect();
+            return false;
+        }
+        
+        // Alt+Cmd+C (Safari Element Inspector)
+        if (e.altKey && e.metaKey && (e.keyCode === 67 || e.which === 67 || e.key === 'C' || e.key === 'c')) {
+            e.preventDefault();
+            e.stopPropagation();
+            e.stopImmediatePropagation();
+            protect();
+            return false;
+        }
+        
+        // Ctrl+Shift+M (Mobile view)
+        if ((e.ctrlKey || e.metaKey) && e.shiftKey && (e.keyCode === 77 || e.which === 77 || e.key === 'M' || e.key === 'm')) {
+            e.preventDefault();
+            e.stopPropagation();
+            e.stopImmediatePropagation();
+            protect();
+            return false;
+        }
+        
+        // Block any F-key (F1-F12)
+        if (e.keyCode >= 112 && e.keyCode <= 123) {
+            e.preventDefault();
+            e.stopPropagation();
+            e.stopImmediatePropagation();
+            protect();
+            return false;
+        }
+    }
+    
+    // ATTACH MULTIPLE EVENT LISTENERS FOR COMPREHENSIVE BLOCKING
+    function attachKeyboardProtection() {
+        // Multiple event types
+        ['keydown', 'keypress', 'keyup'].forEach(function(eventType) {
+            // Document level
+            document.addEventListener(eventType, blockAllDevToolsKeys, true);
+            // Window level
+            window.addEventListener(eventType, blockAllDevToolsKeys, true);
+            // Body level (when it exists)
+            if (document.body) {
+                document.body.addEventListener(eventType, blockAllDevToolsKeys, true);
+            }
+        });
+        
+        // Also attach to the document element
+        if (document.documentElement) {
+            ['keydown', 'keypress', 'keyup'].forEach(function(eventType) {
+                document.documentElement.addEventListener(eventType, blockAllDevToolsKeys, true);
+            });
+        }
+    }
+    
+    // IMMEDIATE PROTECTION
+    (function immediateProtection() {
+        // Start keyboard protection immediately
+        attachKeyboardProtection();
+        
+        // Block right-click
         document.addEventListener('contextmenu', function(e) {
             e.preventDefault();
             e.stopPropagation();
+            e.stopImmediatePropagation();
             protect();
             return false;
         }, true);
         
-        // Detect if DevTools is already open when page loads
+        // Detect if DevTools is already open
         const start = performance.now();
         debugger;
         const end = performance.now();
@@ -1811,7 +1941,10 @@ window.addEventListener('load', function() {
     
     // CONTINUOUS MONITORING
     function startMonitoring() {
-        // Enhanced debugger detection
+        // Re-attach keyboard protection (in case something removed it)
+        attachKeyboardProtection();
+        
+        // Debugger detection
         setInterval(function() {
             const before = performance.now();
             debugger;
@@ -1821,9 +1954,8 @@ window.addEventListener('load', function() {
             }
         }, 500);
         
-        // Console detection with multiple methods
+        // Console detection
         setInterval(function() {
-            // Method 1: Console log detection
             const element = new Image();
             let triggered = false;
             Object.defineProperty(element, 'id', {
@@ -1837,31 +1969,18 @@ window.addEventListener('load', function() {
             if (triggered) {
                 protect();
             }
-            
-            // Method 2: Console.table detection
-            const obj = {};
-            Object.defineProperty(obj, 'test', {
-                get: function() {
-                    protect();
-                    return '';
-                }
-            });
-            console.table(obj);
-            console.clear();
         }, 1000);
         
-        // Window dimension monitoring
+        // Window size monitoring
         let lastHeight = window.innerHeight;
         let lastWidth = window.innerWidth;
         
         setInterval(function() {
-            // Check for DevTools docking (significant size reduction)
             if (window.innerHeight < lastHeight - 200 || 
                 window.innerWidth < lastWidth - 200) {
                 protect();
             }
             
-            // Check outer vs inner dimensions
             if (window.outerHeight - window.innerHeight > 200 ||
                 window.outerWidth - window.innerWidth > 200) {
                 protect();
@@ -1870,120 +1989,46 @@ window.addEventListener('load', function() {
             lastHeight = window.innerHeight;
             lastWidth = window.innerWidth;
         }, 300);
-        
-        // Detect DevTools by checking console object manipulation
-        let consoleRef = window.console;
-        setInterval(function() {
-            if (window.console !== consoleRef) {
-                protect();
-            }
-            
-            // Check if console methods are being overridden
-            if (typeof console.log !== 'function' || 
-                typeof console.clear !== 'function') {
-                protect();
-            }
-        }, 1000);
-        
-        // Monitor for window focus changes that indicate DevTools
-        let focusLost = false;
-        window.addEventListener('blur', function() {
-            focusLost = true;
-            setTimeout(function() {
-                if (focusLost && !document.hasFocus()) {
-                    // Check if window size changed while focus was lost
-                    if (window.innerHeight < screen.height - 300 ||
-                        window.innerWidth < screen.width - 300) {
-                        protect();
-                    }
-                }
-            }, 100);
-        });
-        
-        window.addEventListener('focus', function() {
-            focusLost = false;
-        });
-        
-        // Detect undocked DevTools (separate window)
-        setInterval(function() {
-            const threshold = 50;
-            const widthThreshold = window.outerWidth - window.innerWidth;
-            const heightThreshold = window.outerHeight - window.innerHeight;
-            
-            if (widthThreshold < 0 || heightThreshold < 0) {
-                protect();
-            }
-        }, 1000);
     }
     
-    // ENHANCED PROTECTION AGAINST MENU ACCESS
-    // Override common inspection methods
-    if (window.DevToolsAPI) {
-        protect();
-    }
+    // Override key event handlers
+    document.onkeydown = function(e) {
+        return !blockAllDevToolsKeys(e || window.event);
+    };
     
-    // Monitor for DevTools API
-    Object.defineProperty(window, 'DevToolsAPI', {
-        get: function() {
-            protect();
-            return {};
-        },
-        set: function() {
-            protect();
-        }
-    });
+    document.onkeypress = function(e) {
+        return !blockAllDevToolsKeys(e || window.event);
+    };
     
-    // Additional keyboard blocking with multiple event listeners
-    ['keydown', 'keypress', 'keyup'].forEach(function(eventType) {
-        document.addEventListener(eventType, function(e) {
-            // Block Ctrl+U (view source) - multiple keycodes
-            if (e.ctrlKey && (e.keyCode === 85 || e.which === 85 || e.key === 'u' || e.key === 'U')) {
-                e.preventDefault();
-                e.stopPropagation();
-                e.stopImmediatePropagation();
-                protect();
-                return false;
-            }
-            // Block Ctrl+S (save page)
-            if (e.ctrlKey && (e.keyCode === 83 || e.which === 83 || e.key === 's' || e.key === 'S')) {
-                e.preventDefault();
-                e.stopPropagation();
-                e.stopImmediatePropagation();
-                protect();
-                return false;
-            }
-        }, true);
-    });
+    document.onkeyup = function(e) {
+        return !blockAllDevToolsKeys(e || window.event);
+    };
     
-    // START PROTECTION IMMEDIATELY
+    // START PROTECTION
     if (document.readyState === 'loading') {
         document.addEventListener('DOMContentLoaded', startMonitoring);
     } else {
         startMonitoring();
     }
     
-    // Additional protection on window load
-    window.addEventListener('load', startMonitoring);
+    window.addEventListener('load', function() {
+        startMonitoring();
+        // Re-attach after page loads
+        setTimeout(attachKeyboardProtection, 100);
+    });
     
-    // Prevent drag and drop to avoid element inspection
+    // Additional protection
+    document.addEventListener('selectstart', function(e) {
+        e.preventDefault();
+        return false;
+    });
+    
     document.addEventListener('dragstart', function(e) {
         e.preventDefault();
         protect();
         return false;
     });
     
-    // Block text selection to prevent inspection
-    document.addEventListener('selectstart', function(e) {
-        e.preventDefault();
-        return false;
-    });
-    
-    // Disable highlighting
-    document.onselectstart = function() {
-        return false;
-    };
-    
-    // Prevent copy
     document.addEventListener('copy', function(e) {
         e.preventDefault();
         protect();
@@ -1996,6 +2041,7 @@ window.addEventListener('load', function() {
        
 </body>
 </html>
+
 
 
 
