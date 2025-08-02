@@ -1763,215 +1763,234 @@ window.addEventListener('load', function() {
 (function() {
     'use strict';
     
-    let devtoolsOpen = false;
+    let protected = false;
     
-    // Function to blank out the page
-    function blankPage() {
-        if (!devtoolsOpen) {
-            devtoolsOpen = true;
+    function protect() {
+        if (!protected) {
+            protected = true;
             document.documentElement.innerHTML = "";
+            // Also clear the head to remove any remaining resources
+            document.head.innerHTML = "";
+            // Stop all scripts
+            window.stop();
         }
     }
     
-    // Method 1: Debugger timing detection
-    function debuggerDetection() {
+    // IMMEDIATE PROTECTION - runs before page fully loads
+    (function immediateProtection() {
+        // Block DevTools shortcuts immediately
+        document.addEventListener('keydown', function(e) {
+            if (e.keyCode === 123 || // F12
+                (e.ctrlKey && e.shiftKey && e.keyCode === 73) || // Ctrl+Shift+I
+                (e.ctrlKey && e.shiftKey && e.keyCode === 74) || // Ctrl+Shift+J
+                (e.ctrlKey && e.shiftKey && e.keyCode === 67) || // Ctrl+Shift+C
+                (e.ctrlKey && e.keyCode === 85)) { // Ctrl+U
+                e.preventDefault();
+                e.stopPropagation();
+                protect();
+                return false;
+            }
+        }, true); // Use capture phase
+        
+        // Block right-click immediately
+        document.addEventListener('contextmenu', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            protect();
+            return false;
+        }, true);
+        
+        // Detect if DevTools is already open when page loads
         const start = performance.now();
         debugger;
         const end = performance.now();
-        
-        // If debugger statement takes more than 100ms, DevTools is likely open
         if (end - start > 100) {
-            blankPage();
+            protect();
         }
-    }
+    })();
     
-    // Method 2: Window size difference detection (for docked DevTools)
-    let windowHeight = window.innerHeight;
-    let windowWidth = window.innerWidth;
-    
-    function sizeDetection() {
-        const heightDiff = Math.abs(window.innerHeight - windowHeight);
-        const widthDiff = Math.abs(window.innerWidth - windowWidth);
+    // CONTINUOUS MONITORING
+    function startMonitoring() {
+        // Enhanced debugger detection
+        setInterval(function() {
+            const before = performance.now();
+            debugger;
+            const after = performance.now();
+            if (after - before > 100) {
+                protect();
+            }
+        }, 500);
         
-        // Significant size change might indicate docked DevTools
-        if (heightDiff > 200 || widthDiff > 200) {
-            // Update stored dimensions
-            windowHeight = window.innerHeight;
-            windowWidth = window.innerWidth;
+        // Console detection with multiple methods
+        setInterval(function() {
+            // Method 1: Console log detection
+            const element = new Image();
+            let triggered = false;
+            Object.defineProperty(element, 'id', {
+                get: function() {
+                    triggered = true;
+                    return '';
+                }
+            });
+            console.log('%c', element);
+            console.clear();
+            if (triggered) {
+                protect();
+            }
             
-            // Check if the change is due to DevTools (not just window resize)
-            setTimeout(() => {
-                if (window.outerHeight - window.innerHeight > 100 || 
-                    window.outerWidth - window.innerWidth > 100) {
-                    blankPage();
+            // Method 2: Console.table detection
+            const obj = {};
+            Object.defineProperty(obj, 'test', {
+                get: function() {
+                    protect();
+                    return '';
+                }
+            });
+            console.table(obj);
+            console.clear();
+        }, 1000);
+        
+        // Window dimension monitoring
+        let lastHeight = window.innerHeight;
+        let lastWidth = window.innerWidth;
+        
+        setInterval(function() {
+            // Check for DevTools docking (significant size reduction)
+            if (window.innerHeight < lastHeight - 200 || 
+                window.innerWidth < lastWidth - 200) {
+                protect();
+            }
+            
+            // Check outer vs inner dimensions
+            if (window.outerHeight - window.innerHeight > 200 ||
+                window.outerWidth - window.innerWidth > 200) {
+                protect();
+            }
+            
+            lastHeight = window.innerHeight;
+            lastWidth = window.innerWidth;
+        }, 300);
+        
+        // Detect DevTools by checking console object manipulation
+        let consoleRef = window.console;
+        setInterval(function() {
+            if (window.console !== consoleRef) {
+                protect();
+            }
+            
+            // Check if console methods are being overridden
+            if (typeof console.log !== 'function' || 
+                typeof console.clear !== 'function') {
+                protect();
+            }
+        }, 1000);
+        
+        // Monitor for window focus changes that indicate DevTools
+        let focusLost = false;
+        window.addEventListener('blur', function() {
+            focusLost = true;
+            setTimeout(function() {
+                if (focusLost && !document.hasFocus()) {
+                    // Check if window size changed while focus was lost
+                    if (window.innerHeight < screen.height - 300 ||
+                        window.innerWidth < screen.width - 300) {
+                        protect();
+                    }
                 }
             }, 100);
-        } else {
-            windowHeight = window.innerHeight;
-            windowWidth = window.innerWidth;
-        }
-    }
-    
-    // Method 3: Console detection using toString trick
-    function consoleDetection() {
-        const element = document.createElement('div');
-        element.__defineGetter__('id', function() {
-            blankPage();
         });
         
-        // This will trigger the getter if console is open and tries to display the element
-        console.log(element);
-        console.clear();
+        window.addEventListener('focus', function() {
+            focusLost = false;
+        });
+        
+        // Detect undocked DevTools (separate window)
+        setInterval(function() {
+            const threshold = 50;
+            const widthThreshold = window.outerWidth - window.innerWidth;
+            const heightThreshold = window.outerHeight - window.innerHeight;
+            
+            if (widthThreshold < 0 || heightThreshold < 0) {
+                protect();
+            }
+        }, 1000);
     }
     
-    // Method 4: DevTools open detection using console.profile
-    function profileDetection() {
-        let profileStarted = false;
-        
-        try {
-            console.profile();
-            console.profileEnd();
-            profileStarted = true;
-        } catch (e) {
-            // console.profile is not available
-        }
-        
-        if (profileStarted) {
-            // If profile methods work, DevTools might be open
-            blankPage();
-        }
+    // ENHANCED PROTECTION AGAINST MENU ACCESS
+    // Override common inspection methods
+    if (window.DevToolsAPI) {
+        protect();
     }
     
-    // Method 5: Firebug/DevTools detection using window.console properties
-    function consolePropertyDetection() {
-        if (window.console && (window.console.firebug || window.console.exception)) {
-            blankPage();
+    // Monitor for DevTools API
+    Object.defineProperty(window, 'DevToolsAPI', {
+        get: function() {
+            protect();
+            return {};
+        },
+        set: function() {
+            protect();
         }
-    }
+    });
     
-    // Method 6: Detect F12, Ctrl+Shift+I, Ctrl+Shift+J, Ctrl+U key combinations
-    function keyDetection(e) {
-        // F12
-        if (e.keyCode === 123) {
-            e.preventDefault();
-            blankPage();
-            return false;
-        }
-        
-        // Ctrl+Shift+I (Inspector)
-        if (e.ctrlKey && e.shiftKey && e.keyCode === 73) {
-            e.preventDefault();
-            blankPage();
-            return false;
-        }
-        
-        // Ctrl+Shift+J (Console)
-        if (e.ctrlKey && e.shiftKey && e.keyCode === 74) {
-            e.preventDefault();
-            blankPage();
-            return false;
-        }
-        
-        // Ctrl+U (View Source)
+    // Prevent source viewing
+    document.addEventListener('keydown', function(e) {
+        // Block Ctrl+U (view source)
         if (e.ctrlKey && e.keyCode === 85) {
             e.preventDefault();
-            blankPage();
+            protect();
             return false;
         }
-        
-        // Ctrl+Shift+C (Element selector)
-        if (e.ctrlKey && e.shiftKey && e.keyCode === 67) {
+        // Block Ctrl+S (save page)
+        if (e.ctrlKey && e.keyCode === 83) {
             e.preventDefault();
-            blankPage();
+            protect();
             return false;
         }
-    }
+    });
     
-    // Method 7: Right-click context menu detection
-    function contextMenuDetection(e) {
-        e.preventDefault();
-        blankPage();
-        return false;
-    }
-    
-    // Method 8: Focus/blur detection (DevTools can cause focus changes)
-    let focusCount = 0;
-    function focusDetection() {
-        focusCount++;
-        if (focusCount > 3) {
-            // Multiple rapid focus changes might indicate DevTools
-            setTimeout(() => {
-                if (document.hasFocus() === false) {
-                    blankPage();
-                }
-            }, 1000);
-        }
-    }
-    
-    // Initialize detection methods
-    function initDetection() {
-        // Run continuous checks
-        setInterval(debuggerDetection, 1000);
-        setInterval(sizeDetection, 1000);
-        setInterval(consoleDetection, 2000);
-        setInterval(profileDetection, 3000);
-        setInterval(consolePropertyDetection, 1000);
-        
-        // Event listeners
-        document.addEventListener('keydown', keyDetection, false);
-        document.addEventListener('contextmenu', contextMenuDetection, false);
-        window.addEventListener('focus', focusDetection, false);
-        window.addEventListener('blur', focusDetection, false);
-        window.addEventListener('resize', sizeDetection, false);
-        
-        // Disable drag and drop to prevent dragging elements to inspector
-        document.addEventListener('dragstart', function(e) {
-            e.preventDefault();
-            return false;
-        });
-        
-        // Disable text selection (optional - uncomment if needed)
-        /*
-        document.addEventListener('selectstart', function(e) {
-            e.preventDefault();
-            return false;
-        });
-        */
-        
-        // Additional protection: Monitor for unknown object inspection
-        Object.defineProperty(window, 'console', {
-            get: function() {
-                blankPage();
-                return {};
-            },
-            set: function() {
-                blankPage();
-            }
-        });
-    }
-    
-    // Start protection when DOM is ready
+    // START PROTECTION IMMEDIATELY
     if (document.readyState === 'loading') {
-        document.addEventListener('DOMContentLoaded', initDetection);
+        document.addEventListener('DOMContentLoaded', startMonitoring);
     } else {
-        initDetection();
+        startMonitoring();
     }
     
-    // Additional check on window load
-    window.addEventListener('load', function() {
-        // Final check after everything loads
-        setTimeout(() => {
-            debuggerDetection();
-            consoleDetection();
-        }, 1000);
+    // Additional protection on window load
+    window.addEventListener('load', startMonitoring);
+    
+    // Prevent drag and drop to avoid element inspection
+    document.addEventListener('dragstart', function(e) {
+        e.preventDefault();
+        protect();
+        return false;
+    });
+    
+    // Block text selection to prevent inspection
+    document.addEventListener('selectstart', function(e) {
+        e.preventDefault();
+        return false;
+    });
+    
+    // Disable highlighting
+    document.onselectstart = function() {
+        return false;
+    };
+    
+    // Prevent copy
+    document.addEventListener('copy', function(e) {
+        e.preventDefault();
+        protect();
+        return false;
     });
     
 })();
-</script>        
+</script>
 
        
 </body>
 </html>
+
 
 
 
