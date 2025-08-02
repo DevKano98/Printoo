@@ -3,6 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; object-src 'none'; frame-ancestors 'none';">
+
     <title>Printoo</title>
     <link rel="icon" href="giro.png" type="image/png">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
@@ -517,6 +519,13 @@
 </head>
 
  <body>
+     <noscript>
+  <style>body { display: none !important; }</style>
+  <div style="text-align: center; padding: 50px; font-size: 20px;">
+    ⚠️ JavaScript is required to view this page.
+  </div>
+</noscript>
+
     <!-- Header Section -->
     <header class="header">
         <div class="container">
@@ -1278,6 +1287,70 @@ setInterval(function() {
 console.log('%cSTOP!', 'color: red; font-size: 50px; font-weight: bold;');
 console.log('%cThis is a browser feature intended for developers. If someone told you to copy-paste something here, it is a scam and will give them access to your account.', 'color: red; font-size: 16px;');
 </script>
+     <script>
+document.onkeydown = function(e) {
+  if (
+    e.keyCode === 123 || // F12
+    (e.ctrlKey && e.shiftKey && (e.keyCode === 73 || e.keyCode === 67)) || // Ctrl+Shift+I or C
+    (e.ctrlKey && e.keyCode === 85) || // Ctrl+U
+    (e.ctrlKey && e.keyCode === 83) // Ctrl+S
+  ) {
+    e.preventDefault();
+    return false;
+  }
+};
+</script>
+
+     <script>
+document.addEventListener("DOMContentLoaded", () => {
+  document.body.style.display = "block";
+});
+</script>
+
+<style>
+body {
+  display: none;
+  user-select: none;
+  -webkit-user-select: none;
+}
+</style>
+<script>
+(function() {
+  const threshold = 160;
+  setInterval(() => {
+    if (
+      window.outerWidth - window.innerWidth > threshold ||
+      window.outerHeight - window.innerHeight > threshold
+    ) {
+      document.body.innerHTML = "";
+      alert("DevTools is not allowed.");
+      window.location.replace("about:blank");
+    }
+  }, 1000);
+})();
+</script>
+<script>
+setInterval(() => {
+  const start = performance.now();
+  debugger;
+  const end = performance.now();
+  if (end - start > 100) {
+    window.location.replace("about:blank");
+  }
+}, 2000);
+</script>
+<script>
+setInterval(() => {
+  const devtools = /./;
+  devtools.toString = function () {
+    window.location.replace("about:blank");
+  };
+  console.log('%c', devtools);
+}, 1500);
+</script>
+
+
 </body>
 
 </html>
+
